@@ -60,6 +60,17 @@ def AES_decrypt(key, nonce, ciphertext, tag):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 app = Flask(__name__)
 db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -109,16 +120,7 @@ class RegisterForm(FlaskForm):
                              InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
     
     email = StringField(validators=[
-                           InputRequired(), Length(min=11, max=40)], render_kw={"placeholder": "Email"})
-
-    # fullname = StringField(validators=[
-    #                        InputRequired(), Length(min=11, max=40)], render_kw={"placeholder": "Full name"})           
-
-    # address = StringField(validators=[
-    #                        InputRequired(), Length(min=11, max=40)], render_kw={"placeholder": "Address"})
-
-    # phone = StringField(validators=[
-    #                        InputRequired(), Length(10)], render_kw={"placeholder": "Phone"})   
+                           InputRequired(), Length(min=11, max=40)], render_kw={"placeholder": "Email"})  
     submit = SubmitField('Register')
     # Check email exist
     def validate_email(self, email):
@@ -160,10 +162,9 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    form = ProfileUser()
     email = current_user.email
-    name_to_show = ProfileUser.query.filter_by(email=email).first()
-    return render_template('dashboard.html', form = form, name_to_show = name_to_show)
+    profile = ProfileUser.query.filter_by(email=current_user.email).first()
+    return render_template('dashboard.html', profile = profile)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -183,8 +184,10 @@ def register():
         hashed_password = hashlib.scrypt(password.encode(), salt=salt, n=2**14, r=8, p=1, dklen=32)
         new_user = User(email=request.form["email"], password=hashed_password, salt = salt)
         db.session.add(new_user)
+        # create public key and private key
         kpublic, kprivate = generate_RSA()
         nonce,ciphertext,tag =AES_encrypt(hashed_password,kprivate)
+        # encrypt private key with AES
         new_aeskey = AESKey(email=request.form["email"], nonce = nonce, tag = tag)
         db.session.add(new_aeskey)
         new_profile = ProfileUser(email=request.form["email"], name=request.form["name"],
@@ -196,6 +199,73 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html', form=form)
+
+
+@ app.route('/uploadfile', methods=['GET', 'POST'])
+def upload():
+    return render_template("uploadfile.html")  
+
+
+
+
+def test_encypt(session_key,enc_session_key,filename):
+    with open(filename, 'rb') as f:
+        data= f.read()
+    file_out = open(filename+"_encrypt", "wb")
+    cipher_aes = AES.new(session_key, AES.MODE_EAX)
+    ciphertext, tag = cipher_aes.encrypt_and_digest(data)
+    [ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
+    file_out.close()
+
+def test_decrypt(private_key,filename):
+    file_in = open(filename+"_encrypt", "rb")
+    enc_session_key, nonce, tag, ciphertext = [file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
+    cipher_rsa = PKCS1_OAEP.new(private_key)
+    session_key = cipher_rsa.decrypt(enc_session_key)
+
+    # Decrypt the data with the AES session key
+    cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
+    data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+    with open(filename+"_decrypt", 'wb') as out:
+        out.write(data)
+
+
+
+
+
+
+@app.route('/success', methods = ['POST'])  
+def success():  
+    if request.method == 'POST':
+
+        session_key = get_random_bytes(16)
+        #print(session_key)
+
+        # Encrypt the session key with the public RSA key:
+        profile = ProfileUser.query.filter_by(email=current_user.email).first()
+        aes = AESKey.query.filter_by(email=current_user.email).first()
+        recipient_key = RSA.import_key(profile.kpublic)
+        cipher_rsa = PKCS1_OAEP.new(recipient_key)
+        enc_session_key = cipher_rsa.encrypt(session_key)
+
+        f = request.files['file']  
+        f.save(f.filename)
+
+        test_encypt(session_key,enc_session_key,f.filename)
+
+        private_key = AES_decrypt(current_user.password, aes.nonce, profile.kprivate, aes.tag)
+        private_key_real = RSA.import_key(private_key)
+        test_decrypt(private_key_real,f.filename)
+
+        return render_template("success.html", name = f.filename)  
+
+
+
+
+
+
+
+
 
 
 
