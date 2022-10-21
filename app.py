@@ -15,8 +15,10 @@ from Crypto.Random import get_random_bytes
 from Crypto import Random
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
 # from bs4 import Tag
 import hashlib
+import binascii
 
 
 def generate_RSA(bits=2048):
@@ -49,6 +51,27 @@ def AES_decrypt(key, nonce, ciphertext, tag):
         return False
 
 
+#Encrypt file
+def test_encypt(session_key,enc_session_key,filename):
+    with open(filename, 'rb') as f:
+        data= f.read()
+    file_out = open(filename+"_encrypt", "wb")
+    cipher_aes = AES.new(session_key, AES.MODE_EAX)
+    ciphertext, tag = cipher_aes.encrypt_and_digest(data)
+    [ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
+    file_out.close()
+
+def test_decrypt(private_key,filename):
+    file_in = open(filename+"_encrypt", "rb")
+    enc_session_key, nonce, tag, ciphertext = [file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
+    cipher_rsa = PKCS1_OAEP.new(private_key)
+    session_key = cipher_rsa.decrypt(enc_session_key)
+
+    # Decrypt the data with the AES session key
+    cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
+    data = cipher_aes.decrypt_and_verify(ciphertext, tag)
+    with open(filename+"_decrypt", 'wb') as out:
+        out.write(data)
 
 
 
@@ -208,33 +231,10 @@ def upload():
 
 
 
-def test_encypt(session_key,enc_session_key,filename):
-    with open(filename, 'rb') as f:
-        data= f.read()
-    file_out = open(filename+"_encrypt", "wb")
-    cipher_aes = AES.new(session_key, AES.MODE_EAX)
-    ciphertext, tag = cipher_aes.encrypt_and_digest(data)
-    [ file_out.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
-    file_out.close()
-
-def test_decrypt(private_key,filename):
-    file_in = open(filename+"_encrypt", "rb")
-    enc_session_key, nonce, tag, ciphertext = [file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
-    cipher_rsa = PKCS1_OAEP.new(private_key)
-    session_key = cipher_rsa.decrypt(enc_session_key)
-
-    # Decrypt the data with the AES session key
-    cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
-    data = cipher_aes.decrypt_and_verify(ciphertext, tag)
-    with open(filename+"_decrypt", 'wb') as out:
-        out.write(data)
 
 
 
-
-
-
-@app.route('/success', methods = ['POST'])  
+@app.route('/success', methods = ['GET', 'POST'])  
 def success():  
     if request.method == 'POST':
 
@@ -262,11 +262,71 @@ def success():
 
 
 
+def sign_file(filename,private_key):
+    with open(filename, 'rb') as f:
+        msg_b = f.read()
+    #msg = b'A message for signing'
+    hash = SHA256.new(msg_b)
+    signer = PKCS115_SigScheme(private_key)
+    signature = signer.sign(hash)
+    file_out = open(filename+".sig", "wb")
+    [ file_out.write(x) for x in (signature,msg_b) ]
+    file_out.close()
 
 
 
+@app.route('/signature', methods = ['GET','POST'])  
+def sig():
+    if request.method == 'POST':
+        f = request.files['file']
+        profile = ProfileUser.query.filter_by(email=current_user.email).first()
+        aes = AESKey.query.filter_by(email=current_user.email).first()
+        private_key = AES_decrypt(current_user.password, aes.nonce, profile.kprivate, aes.tag)
+        private_key_real = RSA.import_key(private_key)  
+        sign_file(f.filename, private_key_real)
+        return render_template("sigsuccess.html")
+    return render_template("signature.html") 
 
 
+@app.route('/checksig', methods = ['GET','POST'])
+def check_sig():
+    return render_template("checksig.html") 
+
+
+def verify_file(sign_filename,filename,public_key):
+    #msg = b'hello vn 123 @'
+    with open(filename, 'rb') as f:
+        msg= f.read()
+    
+    #print(msg)
+    
+    file_in = open(sign_filename, "rb")
+    signature,msg_2 = [file_in.read(x) for x in (256, -1) ]
+    #print(msg_2)
+    #print(signature)
+    hash = SHA256.new(msg)
+    signer = PKCS115_SigScheme(public_key)
+    try:
+        signer.verify(hash, signature)
+        return True
+    except:
+        return False
+
+
+
+@app.route('/check', methods = ['GET','POST'])
+def check():
+    if request.method == 'POST':
+        arr  = ProfileUser.query.all()
+        filename1 = request.form["filename"]
+        filename2 = request.form["filename2"]
+        for i in arr:
+            if verify_file(filename2, filename1, RSA.import_key(i.kpublic)):
+                return render_template("check.html",i=i)
+        return "False"
+
+
+     
 
 
 
