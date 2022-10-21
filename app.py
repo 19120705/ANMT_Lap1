@@ -289,6 +289,7 @@ def sig():
 
 
 @app.route('/checksig', methods = ['GET','POST'])
+@login_required
 def check_sig():
     return render_template("checksig.html") 
 
@@ -315,6 +316,7 @@ def verify_file(sign_filename,filename,public_key):
 
 
 @app.route('/check', methods = ['GET','POST'])
+@login_required
 def check():
     if request.method == 'POST':
         arr  = ProfileUser.query.all()
@@ -323,7 +325,7 @@ def check():
         for i in arr:
             if verify_file(filename2, filename1, RSA.import_key(i.kpublic)):
                 return render_template("check.html",i=i)
-        return "False"
+        flash("Not find")
 
 
      

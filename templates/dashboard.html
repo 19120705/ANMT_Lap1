@@ -1,12 +1,36 @@
-<html>  
-<head>  
-<title>success</title>  
-</head>  
-<body>  
-    <p >Email: {{profile.email}} </p>
-    <p>Name: {{profile.name}}</p>
-    <p>Address: {{profile.address}}</p>
-    <p>Phone: {{profile.phone}}</p>
-    <p>Date: {{profile.date}}</p>
-</body>  
-</html>  
+{% extends "base.html" %}
+{% block title %}Login Page{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for m in messages %}
+            <P>{{m}}</P>
+        {% endfor %} 
+    {% endif %} 
+{% endwith %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Home</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-mdb-toggle="collapse"
+        data-mdb-target="#navbarNavAltMarkup"
+        aria-controls="navbarNavAltMarkup"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-link active" aria-current="page" href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a class="nav-link" href="{{ url_for('upload') }}">Upload file</a>
+          <a class="nav-link" href="{{ url_for('sig') }}">Signature</a>
+          <a class="nav-link" href="{{ url_for('check_sig') }}">Check Signature</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+{% endblock %}
