@@ -29,6 +29,7 @@
           <a class="nav-link" href="{{ url_for('upload') }}">Upload file</a>
           <a class="nav-link" href="{{ url_for('sig') }}">Signature</a>
           <a class="nav-link" href="{{ url_for('check_sig') }}">Check Signature</a>
+          <a class="nav-link" href="{{ url_for('logout') }}">Log out</a>
         </div>
       </div>
     </div>
@@ -36,6 +37,7 @@
 
   <style>
     body{
+      background-color: bisque;
         background-position: center center;
         display: flex;
         flex-direction: column;
@@ -53,7 +55,7 @@
     .GFG {
             background-color: dimgray;
             border: 2px solid black;
-            color: black;
+            color: white;
             padding: 5px 10px;
             width: 5cm;
             height: 1cm;
@@ -67,7 +69,7 @@
 <a  href="{{ url_for('dashboard') }}"><button class="GFG">
   Dashboard
 </button></a>
-<a  href="{{ url_for('dashboard') }}"><button class="GFG">
+<a  href="{{ url_for('profile') }}"><button class="GFG">
   Profile
 </button></a>
 <a  href="{{ url_for('upload') }}"><button class="GFG">

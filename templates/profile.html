@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,7 +24,7 @@
     h1{
     font-weight:bold;
     font-size: 4rem;
-    margin-top: 12rem;
+    margin-top: 5rem;
     color:darkcyan;
     }
     p{
@@ -35,7 +36,7 @@
             border: 2px solid black;
             color: green;
             padding: 5px 10px;
-            width: 4cm;
+            width: 5cm;
             height: 1cm;
             text-align: center;
             display: inline-block;
@@ -45,13 +46,17 @@
         }
 </style>
 <body>
-    <h1>Upload file</h1> 
-    <form action = "/success" method = "post" enctype="multipart/form-data">  
-        <input type="file" name="file"/>  
-        <input type = "submit" value="Upload">  
-    </form>  
+    <h1>Your Profile</h1>
+    <p >Email: {{i.email}} </p>
+    <p>Name: {{i.name}}</p>
+    <p>Address: {{i.address}}</p>
+    <p>Phone: {{i.phone}}</p>
+    <p>Date: {{i.date}}</p>
+    <a href="{{ url_for('change_profile') }}"><button class="GFG">
+        Change profile
+    </button></a>
     <a href="{{ url_for('dashboard') }}"><button class="GFG">
-        Home
+        Back
     </button></a>
 
 </body>

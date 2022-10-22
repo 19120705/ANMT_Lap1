@@ -114,9 +114,29 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
     email = current_user.email
     profile = ProfileUser.query.filter_by(email=current_user.email).first()
-    return render_template('dashboard.html', profile = profile)
+    return render_template('profile.html', i = profile)
+
+@app.route('/changeprofile', methods=['GET', 'POST'])
+@login_required
+def change_profile():
+    form = RegisterForm()
+    profile = ProfileUser.query.filter_by(email=current_user.email).first()
+    if form.validate_on_submit():
+        profile.name = request.form["name"]
+        profile.address = "1213"
+        profile.phone = request.form["phone"]
+        profile.date = request.form["date"]
+        db.session.commit()
+        return redirect(url_for('profile'))
+    return render_template('changeprofile.html',form = form ,i = profile)
+
 
 
 @app.route('/logout', methods=['GET', 'POST'])
