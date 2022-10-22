@@ -8,10 +8,44 @@
     <title>Home</title>
 </head>
 
+<style>
+    body{
+        background-position: center center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+    }
+    h1{
+    font-weight:bold;
+    font-size: 4rem;
+    margin-top: 12rem;
+    color:darkcyan;
+    }
+    .GFG {
+            background-color: white;
+            border: 2px solid black;
+            color: green;
+            padding: 5px 10px;
+            width: 4cm;
+            height: 1cm;
+            text-align: center;
+            display: inline-block;
+            font-size: 20px;
+            margin: 10px 30px;
+            cursor: pointer;
+        }
+</style>
 <body>
-    <h1>Login Authentication System in Flask.</h1>
-    <a href="{{ url_for('login') }}">Login Page</a><br>
-    <a href="{{ url_for('register') }}">Register Page</a><br>
+    <h1>Login Authentication System</h1>
+    <a href="{{ url_for('login') }}"><button class="GFG">
+        Login Page
+    </button></a>
+    <a href="{{ url_for('register') }}"><button class="GFG">
+        Register Page
+    </button></a>
 
 </body>
 

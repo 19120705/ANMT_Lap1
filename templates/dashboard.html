@@ -33,4 +33,50 @@
       </div>
     </div>
   </nav>
+
+  <style>
+    body{
+        background-position: center center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+    }
+    h1{
+    font-weight:bold;
+    font-size: 4rem;
+    margin-top: 12rem;
+    color:darkcyan;
+    }
+    .GFG {
+            background-color: dimgray;
+            border: 2px solid black;
+            color: black;
+            padding: 5px 10px;
+            width: 5cm;
+            height: 1cm;
+            text-align: center;
+            display: inline-block;
+            font-size: 20px;
+            margin: 15px 30px;
+            cursor: pointer;
+        }
+</style>
+<a  href="{{ url_for('dashboard') }}"><button class="GFG">
+  Dashboard
+</button></a>
+<a  href="{{ url_for('dashboard') }}"><button class="GFG">
+  Profile
+</button></a>
+<a  href="{{ url_for('upload') }}"><button class="GFG">
+  Upload file
+</button></a>
+<a  href="{{ url_for('sig') }}"><button class="GFG">
+  Signature
+</button></a>
+<a  href="{{ url_for('check_sig') }}"><button class="GFG">
+  Check Signature
+</button></a>
 {% endblock %}

@@ -1,12 +1,59 @@
-<html>  
-<head>  
-    <title>upload</title>  
-</head>  
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+
+<style>
+    body{
+        background-position: center center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+    }
+    h1{
+    font-weight:bold;
+    font-size: 4rem;
+    margin-top: 12rem;
+    color:darkcyan;
+    }
+    p{
+        font-weight:bold;
+        color: maroon;
+    }
+    .GFG {
+            background-color: white;
+            border: 2px solid black;
+            color: green;
+            padding: 5px 10px;
+            width: 4cm;
+            height: 1cm;
+            text-align: center;
+            display: inline-block;
+            font-size: 20px;
+            margin: 10px 30px;
+            cursor: pointer;
+        }
+</style>
 <body>
     <h1>Signature</h1>   
     <form action = "/signature" method = "post" enctype="multipart/form-data">  
         <input type="file" name="file" />  
-        <input type = "submit" value="Upload">  
+        <input type = "submit" value="Signature">  
+    </form>   
     </form>  
-</body>  
-</html> 
+    <a href="{{ url_for('dashboard') }}"><button class="GFG">
+        Home
+    </button></a>
+
+</body>
+
+</html>
